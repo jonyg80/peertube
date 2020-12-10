@@ -413,6 +413,8 @@ describe('Test live', function () {
       await testVideoResolutions(liveVideoId, resolutions)
 
       await stopFfmpeg(command)
+
+      await wait(3000)
       await waitJobs(servers)
 
       await waitUntilLivePublished(servers[0].url, servers[0].accessToken, liveVideoId)
