@@ -7,12 +7,14 @@ on:
   push:
     branches: [ develop ]
   schedule:
-    - cron: '0 10,22 * * *'
+    - cron: '0 7,19 * * *'
+  # Allows you to run this workflow manually from the Actions tab 
+  workflow_dispatch:
 
 jobs:
   mv:
 
-    runs-on: macos-latest
+    runs-on: ubuntu-20.04
 
     steps:
     - uses: actions/checkout@v2
@@ -21,12 +23,26 @@ jobs:
       with:
         node-version: 12.x
     - run: |
-        brew install ffmpeg nginx openssl gcc make git yarn
+        sudo apt-get install curl unzip vim
+        sudo apt update
+        sudo apt install nginx ffmpeg openssl g++ make git python-dev
+        ffmpeg -version
+        g++ -v
+    - name: set name server
+      run: |
+        sudo cat /etc/resolv.conf
+        echo "@@@@@@@@@@@@@@@ \n @@@@@@@@@@@@@"
+        sudo sh -c "echo 'nameserver 8.8.8.8' > /etc/resolv.conf"
+        sudo sh -c "echo 'nameserver 8.8.4.4' >> /etc/resolv.conf"
+        sudo sh -c "echo 'options edns0 trust-ad' >> /etc/resolv.conf"
+        sudo sh -c "echo 'search l4pwberga4fehcq032xpip23ka.cx.internal.cloudapp.net' >> /etc/resolv.conf"
+        sudo cat /etc/resolv.conf
     - name: build peertube
       run: |
         NOCLIENT=1 yarn install --pure-lockfile
         npm run setup:cli
+      
     - name: upload
       run: |
-        node dist/server/tools/peertube-import-videos.js -u '${{ secrets.URL }}' -U '${{ secrets.USER }}' --password '${{ secrets.PASSWORD }}' --target-url '${{ secrets.TARGET_MV }}'  
+        node dist/server/tools/peertube-import-videos.js -u '${{ secrets.URL }}' -U '${{ secrets.USER }}' --password '${{ secrets.PASSWORD }}' --target-url '${{ secrets.TARGET_DA }}'  
   
